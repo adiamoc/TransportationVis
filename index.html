@@ -1,0 +1,298 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.1/mapbox-gl.js'></script>
+  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.1/mapbox-gl.css' rel='stylesheet' />
+  <title>Cities Map</title>
+
+  <style>
+    html,
+    body,
+
+    body {
+      font-family: Helvetica, sans-serif;
+      font-weight: 100;
+      overflow-x: hidden;
+      margin: 0;
+    }
+    #wrapper {
+      width: 100%;
+      height: 100%;
+      padding: 0px;
+      margin: 0px;
+      font-family: Helvetica, sans-serif;
+      position: absolute;
+      right: -17px;
+    }
+
+    .map {
+      position: relative;
+      width: 50%;
+      height: 85%;
+      float: left;
+      left: -17px;
+    }
+
+    #firstmap {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+    #secondmap {
+      position: absolute;
+      height: 100%;
+      width: 100%;
+    }
+    #timeline {
+      position: relative;
+      top: 90%;
+      width: 100%;
+      height: 110%;
+      background-color: white;
+      z-index: 1;
+      -moz-box-shadow: 0 0 20px rgba(0,0,0,0.4);
+      -webkit-box-shadow: 0 0 20px rgba(0,0,0,0.4);
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    }
+
+    #linechart {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+    #linecharttooltip{
+
+    }
+    .hidden {
+      display: none;
+    }
+
+    .ticks {
+      font: 10px sans-serif;
+    }
+
+    .track,
+    .track-inset,
+    .track-overlay {
+      stroke-linecap: round;
+    }
+
+    .track {
+      stroke: #000;
+      stroke-opacity: 0.3;
+      stroke-width: 10px;
+    }
+
+    .track-inset {
+      stroke: #ddd;
+      stroke-width: 8px;
+    }
+
+    .track-overlay {
+      pointer-events: stroke;
+      stroke-width: 50px;
+      stroke: transparent;
+      cursor: crosshair;
+    }
+
+    .handle {
+      fill: #fff;
+      stroke: #000;
+      stroke-opacity: 0.5;
+      stroke-width: 1.25px;
+    }
+
+    .map-overlay {
+      overflow: hidden;
+
+      font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+      position: relative;
+      width: 100%;
+      height: 50%;
+      left: -17px;
+      box-shadow:0 -3px 30px rgba(0, 0, 0, 0.20);
+      background-color: #fff;
+      bottom: 0;
+
+
+    }
+
+
+    .map-overlay .map-overlay-inner {
+      width: 70%;
+      height: 20%;
+      margin: auto;
+      padding-top: 2em;
+      position: relative;
+    }
+
+    .map-overlay #year {
+      font-size: 2em;
+    }
+
+    .map-overlay #station {
+      margin-top: 2em;
+    }
+
+    .map-overlay #slider {
+      margin-top: 1em;
+      background-color: transparent;
+      width: 100%;
+      cursor: ew-resize;
+    }
+    #lineplot {
+      height: 60%;
+      width: 70%;
+      margin: auto;
+    }
+
+    .dot {
+      stroke: #fff;
+    }
+
+    #name {
+      position: relative;
+      top: 10px;
+      left: 10px;
+      background: rgba(255, 255, 255, 0.8);
+      margin-right: 20px;
+      overflow: auto;
+      border-radius: 3px;
+      padding: 10px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      height: 50px;
+      margin-bottom: 40px;
+      width: 250px;
+      font-size: 1.5em;
+      font-weight: 100;
+    }
+
+    .linename {
+      width: 10%;
+      height: 100%;
+      overflow: auto;
+      padding: 1em;
+
+    }
+
+    #left {
+      position: absolute;
+      top: 0;
+      left: 0;
+
+    }
+
+    #right {
+      position: absolute;
+      top: 0;
+      right: 0;
+    }
+
+    #coloriscool {
+      position: absolute;
+      top: 30%;
+      left: 20%;
+      width: 150px;
+      height: 50px;
+      /*border: 1px solid black;*/
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+      background-color: white;
+
+    }
+
+    h2, h3, h4 {
+      text-align: center;
+    }   
+
+    #myTooltip {
+      position: absolute;
+      text-align: center; 
+      border: 0px;      
+      border-radius: 8px;
+      font: 14px sans-serif;                
+      padding: 5px; 
+      overflow-x: visible;
+      overflow-y: visible;
+      background: LightGrey;
+    }
+
+    h3 {
+      font-family: Helvetica, sans-serif;
+      font-weight: 100;
+      height: 15%;
+      justify-content: center;
+    }
+        
+
+    path:hover {
+      fill-opacity: .7;
+    }
+       
+    /* Legend Font Style */
+    .legend {
+      font: 11px sans-serif;
+    }
+        
+    /* Legend Position Style */
+    .legend {
+      position:absolute;
+    }
+    
+    #myButton{
+    	
+    }
+
+  </style>
+</head>
+
+<body>
+<div id="myTooltip"></div>
+<h3><br><br>Click to select countries: <button id = "myButton">Select All</button></h3>
+  <div id="area1"></div> 
+  <h3>Select 2 citys to compare: </h3> 
+  <div id="area2"></div>
+
+  <div id="wrapper">
+    <div class="map">
+      <div id="firstmap"></div>
+      <div id="name">
+        <label id='country1'></label><br>
+        <label id='city1'></label><br>
+      </div>
+    </div>
+    <div class="map">
+      <div id="secondmap"></div>
+      <div id="name">
+        <label id='country2'></label><br>
+        <label id='city2'></label><br>
+      </div>
+    </div>
+
+    <div class='map-overlay top'>
+      <div class='map-overlay-inner'>
+        <label id='year'></label>
+        <input type="checkbox" id="station">Show Station<br>
+        <input id='slider' type='range' min=-1 max=-1 step='1' value='0' />
+      </div>
+
+      <div id = "lineplot">
+      </div>
+
+      <div class="linename" id="left"></div>
+      <div class="linename" id="right"></div>
+
+    </div>
+  </div>
+
+  <script src="./scripts/d3.v4.min.js"></script>
+    <script src='./scripts/vis.js'></script>
+  <script src='./scripts/graph2.js'></script>
+  <script src='./scripts/d3.layout.cloud.js'></script>
+  <!-- <script src="scripts/mapyear.js"></script> -->
+
+  <script src="scripts/citymap.js"></script>
+
+
+</body>
